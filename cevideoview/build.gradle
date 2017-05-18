@@ -1,0 +1,69 @@
+apply plugin: 'com.android.library'
+
+apply from: "$rootDir/version.gradle"
+
+logger.quiet("android-cevideoview-$VERSION_NAME ($VERSION_CODE)")
+
+ext {
+    bintrayOrg = 'airgoss'
+    bintrayRepo = 'airGOss'
+    bintrayName = 'cevideoview'
+
+    publishedGroupId = 'com.airg.android'
+    libraryName = 'Circular Expandable VideoView'
+    artifact = 'cevideoview'
+
+    libraryDescription = 'A circular video view that expands to full screen with a tap and goes back to collapsed mode with a swipe down'
+
+    siteUrl = 'https://github.com/airG/android-circular-expandable-videoview'
+    gitUrl = 'https://github.com/airG/android-circular-expandable-videoview.git'
+
+    libraryVersion = VERSION_NAME
+
+    developerId = 'airgoss'
+    developerName = 'airG OpenSource'
+    developerEmail = 'opensource@airg.com'
+
+    licenseName = 'The Apache Software License, Version 2.0'
+    licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+    allLicenses = ["Apache-2.0"]
+}
+
+android {
+    compileSdkVersion Integer.parseInt(COMPILE_SDK_VERSION)
+    buildToolsVersion BUILD_TOOLS_VERSION
+
+    defaultConfig {
+        minSdkVersion Integer.parseInt(MIN_SDK_VERSION)
+        targetSdkVersion Integer.parseInt(COMPILE_SDK_VERSION)
+        versionCode VERSION_CODE
+        versionName VERSION_NAME
+
+        buildConfigField "String", "VCS_BRANCH", "\"$VCS_BRANCH\""
+        buildConfigField "String", "VCS_REVISION", "\"$VCS_REVISION\""
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+
+    lintOptions {
+        abortOnError false
+    }
+}
+
+dependencies {
+    provided 'org.projectlombok:lombok:' + LOMBOK_VERSION
+    annotationProcessor 'org.projectlombok:lombok:' + LOMBOK_VERSION
+    testAnnotationProcessor 'org.projectlombok:lombok:' + LOMBOK_VERSION
+    androidTestAnnotationProcessor 'org.projectlombok:lombok:' + LOMBOK_VERSION
+    compile 'com.android.support:appcompat-v7:' + SUPPORT_LIB_VERSION
+    compile 'com.airg.android:logger:1.00.00@aar'
+}
+
+apply from: 'https://raw.githubusercontent.com/airG/JCenter/master/install.gradle'
+apply from: 'https://raw.githubusercontent.com/airG/JCenter/master/bintray.gradle'

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="bottom"
+    android:background="@android:color/holo_blue_bright"
+    android:orientation="vertical"
+    tools:context="com.airg.videoclipper.MainActivity">
+
+    <com.airg.android.circlevideo.CircularExpandableVideoView
+        android:id="@+id/video"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:cevCollapsed="true"
+        app:cevCollapsedHeight="80dp"
+        app:cevCollapsedLeftPadding="20dp"
+        app:cevCollapsedRightPadding="30dp"
+        app:cevCollapsedBottomPadding="30dp"
+        app:cevCollapsedTopPadding="20dp"
+        app:cevCollapsedWidth="80dp"/>
+
+    <TextView
+        android:id="@+id/text"
+        android:layout_gravity="center"
+        android:textAppearance="@android:style/TextAppearance.DeviceDefault.Large"
+        android:background="@color/colorAccent"
+        android:textColor="@color/colorPrimary"
+        android:gravity="center"
+        android:text="Swipe down to minimize"
+        android:padding="20dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+</FrameLayout>
