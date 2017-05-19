@@ -374,6 +374,12 @@ public class CircularExpandableVideoView extends GLSurfaceView
         mRenderer.setVideoSize(width, height);
     }
 
+    public boolean isCollapsed () {
+        synchronized (mRenderer) {
+            return collapsed;
+        }
+    }
+
     public void toggle() {
         synchronized (mRenderer) {
             if (animating) return;
@@ -397,7 +403,7 @@ public class CircularExpandableVideoView extends GLSurfaceView
                 .build();
     }
 
-    private void collapse() {
+    public void collapse() {
         synchronized (mRenderer) {
             if (collapsed) {
                 if (BuildConfig.DEBUG) LOG.d("Already collapsed");
@@ -429,7 +435,7 @@ public class CircularExpandableVideoView extends GLSurfaceView
         }
     }
 
-    private void expand() {
+    public void expand() {
         synchronized (mRenderer) {
             if (!collapsed) {
                 if (BuildConfig.DEBUG) LOG.d("Already expanded");
