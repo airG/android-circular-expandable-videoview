@@ -57,4 +57,17 @@ final class Helper {
         }
         return text.toString();
     }
+
+    static boolean checkRage (final float value, final float min, final float max) {
+        return value >= min && value <= max;
+    }
+
+    static float calculateRadius(float width, float height) {
+        return (float) (0.5f * Math.sqrt(width * width + height * height));
+    }
+
+    static float calculateNormalizedRadius(float width, float height, final float maxW, final float maxH) {
+        // magic number to compensate for rounding errors. Actual radius is slightly larger than it should be so that the entire video is visible
+        return 1.05f * calculateRadius(width, height) / Math.min(maxW, maxH);
+    }
 }

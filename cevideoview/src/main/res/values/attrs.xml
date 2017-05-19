@@ -20,6 +20,10 @@
 <resources>
     <declare-styleable name="CircularExpandableVideoView">
         <attr name="cevCollapsed" format="boolean"/>
+
+        <attr name="cevCollapsedVolume" format="float"/>
+        <attr name="cevExpandedVolume" format="float"/>
+
         <attr name="cevCollapsedWidth" format="dimension"/>
         <attr name="cevCollapsedHeight" format="dimension"/>
 

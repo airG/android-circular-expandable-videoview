@@ -14,6 +14,8 @@
         android:id="@+id/video"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        app:cevCollapsedVolume="0.0"
+        app:cevExpandedVolume="1.0"
         app:cevCollapsed="true"
         app:cevCollapsedHeight="80dp"
         app:cevCollapsedLeftPadding="20dp"

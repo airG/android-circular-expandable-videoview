@@ -52,6 +52,8 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import static com.airg.android.circlevideo.Helper.calculateNormalizedRadius;
+
 /**
  * Created by MahramF.
  */
@@ -99,6 +101,11 @@ public class CircularExpandableVideoView extends GLSurfaceView
     int expandedBottomPadding = 0;
     int expandedTopPadding = 0;
 
+    float collapsedVolume = 0f;
+    float expandedVolume = 1f;
+
+    float currentVolume = 0f;
+
     int animationDuration = 500;
 
     volatile boolean animating = false;
@@ -119,7 +126,19 @@ public class CircularExpandableVideoView extends GLSurfaceView
 
         try {
             animationDuration = ta.getInteger(R.styleable.CircularExpandableVideoView_cevAnimationDuration, animationDuration);
+
             collapsed = ta.getBoolean(R.styleable.CircularExpandableVideoView_cevCollapsed, collapsed);
+
+            collapsedVolume = ta.getFloat(R.styleable.CircularExpandableVideoView_cevCollapsedVolume, collapsedVolume);
+
+            if (!Helper.checkRage(collapsedVolume, 0f, 1f))
+                throw new IllegalArgumentException("Invalid collapsed volume (valid: 0-1): " + collapsedVolume);
+
+            expandedVolume = ta.getFloat(R.styleable.CircularExpandableVideoView_cevExpandedVolume, expandedVolume);
+
+            if (!Helper.checkRage(expandedVolume, 0f, 1f))
+                throw new IllegalArgumentException("Invalid expanded volume (valid: 0-1): " + expandedVolume);
+
             collapsedHeight = ta.getDimensionPixelSize(R.styleable.CircularExpandableVideoView_cevCollapsedHeight, collapsedHeight);
             collapsedWidth = ta.getDimensionPixelSize(R.styleable.CircularExpandableVideoView_cevCollapsedWidth, collapsedWidth);
 
@@ -171,6 +190,9 @@ public class CircularExpandableVideoView extends GLSurfaceView
         state = State.UNINITIALIZED;
         player.setOnVideoSizeChangedListener(this);
         player.reset();
+
+        currentVolume = collapsed ? collapsedVolume : expandedVolume;
+        player.setVolume(currentVolume, currentVolume);
 
         playWhenReady = false;
         state = State.INITIALIZED;
@@ -291,8 +313,7 @@ public class CircularExpandableVideoView extends GLSurfaceView
                     if (BuildConfig.DEBUG) LOG.d("Resuming paused video");
                     player.start();
                     paused = false;
-                } else
-                if (BuildConfig.DEBUG) LOG.d("Already playing");
+                } else if (BuildConfig.DEBUG) LOG.d("Already playing");
                 break;
             case END:
                 // restart playback
@@ -363,6 +384,19 @@ public class CircularExpandableVideoView extends GLSurfaceView
         }
     }
 
+    private AnimationState currentState() {
+        return AnimationState.builder()
+                .width(currentWidth)
+                .height(currentHeight)
+                .volume(currentVolume)
+                .cropRadius(mRenderer.cropRadius)
+                .paddingLeft(currentLeftPadding)
+                .paddingRight(currentRightPadding)
+                .paddingBottom(currentBottomPadding)
+                .paddingTop(currentTopPadding)
+                .build();
+    }
+
     private void collapse() {
         synchronized (mRenderer) {
             if (collapsed) {
@@ -370,21 +404,14 @@ public class CircularExpandableVideoView extends GLSurfaceView
                 return;
             }
 
-            final AnimationState from = AnimationState.builder()
-                    .width(currentWidth)
-                    .height(currentHeight)
-                    .cropRadius(mRenderer.cropRadius)
-                    .paddingLeft(currentLeftPadding)
-                    .paddingRight(currentRightPadding)
-                    .paddingBottom(currentBottomPadding)
-                    .paddingTop(currentTopPadding)
-                    .build();
+            final AnimationState from = currentState();
 
             final AnimationState to =
                     AnimationState.builder()
                             .width(collapsedWidth)
                             .height(collapsedHeight)
                             .cropRadius(COLLAPSED_RADIUS)
+                            .volume(collapsedVolume)
                             .paddingLeft(collapsedLeftPadding)
                             .paddingRight(collapsedRightPadding)
                             .paddingBottom(collapsedBottomPadding)
@@ -409,15 +436,7 @@ public class CircularExpandableVideoView extends GLSurfaceView
                 return;
             }
 
-            final AnimationState from = AnimationState.builder()
-                    .width(currentWidth)
-                    .height(currentHeight)
-                    .cropRadius(mRenderer.cropRadius)
-                    .paddingLeft(currentLeftPadding)
-                    .paddingRight(currentRightPadding)
-                    .paddingBottom(currentBottomPadding)
-                    .paddingTop(currentTopPadding)
-                    .build();
+            final AnimationState from = currentState();
 
             final int targetWidth = getMeasuredWidth();
             final int targetHeight = getMeasuredHeight();
@@ -427,6 +446,7 @@ public class CircularExpandableVideoView extends GLSurfaceView
                             .width(targetWidth)
                             .height(targetHeight)
                             .cropRadius(calculateNormalizedRadius(targetWidth, targetHeight, mRenderer.surfaceWidth(), mRenderer.surfaceHeight()))
+                            .volume(expandedVolume)
                             .paddingLeft(expandedLeftPadding)
                             .paddingRight(expandedRightPadding)
                             .paddingBottom(expandedBottomPadding)
@@ -443,15 +463,6 @@ public class CircularExpandableVideoView extends GLSurfaceView
         }
     }
 
-    private static float calculateRadius(float width, float height) {
-        return (float) (0.5f * Math.sqrt(width * width + height * height));
-    }
-
-    private static float calculateNormalizedRadius(float width, float height, final float maxW, final float maxH) {
-        // magic number to compensate for rounding errors. Actual radius is slightly larger than it should be so that the entire video is visible
-        return 1.05f * calculateRadius(width, height) / Math.min(maxW, maxH);
-    }
-
     @Override
     public void onAnimationUpdate(ValueAnimator animation) {
         final AnimationState current = (AnimationState) animation.getAnimatedValue();
@@ -464,6 +475,9 @@ public class CircularExpandableVideoView extends GLSurfaceView
             currentRightPadding = current.paddingRight;
             currentTopPadding = current.paddingTop;
             currentBottomPadding = current.paddingBottom;
+
+            currentVolume = current.volume;
+            player.setVolume(currentVolume, currentVolume);
 
             if (BuildConfig.DEBUG) LOG.d("New size: %dx%d, R: %s", currentWidth, currentHeight, current.cropRadius);
             mRenderer.updateScale();
@@ -556,8 +570,8 @@ public class CircularExpandableVideoView extends GLSurfaceView
     private static final float SPLIT = 0.65f;
 
     private static abstract class BaseVideoAnimateEvaluator implements TypeEvaluator<AnimationState> {
-        final IntEvaluator dimensionsevaluator = new IntEvaluator();
-        final FloatEvaluator radiusEvaluator = new FloatEvaluator();
+        final IntEvaluator intEvaluator = new IntEvaluator();
+        final FloatEvaluator floatEvaluator = new FloatEvaluator();
     }
 
     private static class VideoExpandEvaluator extends BaseVideoAnimateEvaluator {
@@ -576,15 +590,17 @@ public class CircularExpandableVideoView extends GLSurfaceView
                     ? 0f
                     : (fraction - radiusChangeThreshold) / (1f - radiusChangeThreshold);
 
-            values.width = dimensionsevaluator.evaluate(sizeFrac, startValue.width, endValue.width);
-            values.height = dimensionsevaluator.evaluate(sizeFrac, startValue.height, endValue.height);
+            values.width = intEvaluator.evaluate(sizeFrac, startValue.width, endValue.width);
+            values.height = intEvaluator.evaluate(sizeFrac, startValue.height, endValue.height);
 
-            values.cropRadius = radiusEvaluator.evaluate(radiusFrac, startValue.cropRadius, endValue.cropRadius);
+            values.cropRadius = floatEvaluator.evaluate(radiusFrac, startValue.cropRadius, endValue.cropRadius);
 
-            values.paddingLeft = dimensionsevaluator.evaluate(fraction, startValue.paddingLeft, endValue.paddingLeft);
-            values.paddingRight = dimensionsevaluator.evaluate(fraction, startValue.paddingRight, endValue.paddingRight);
-            values.paddingTop = dimensionsevaluator.evaluate(fraction, startValue.paddingTop, endValue.paddingTop);
-            values.paddingBottom = dimensionsevaluator.evaluate(fraction, startValue.paddingBottom, endValue.paddingBottom);
+            values.paddingLeft = intEvaluator.evaluate(fraction, startValue.paddingLeft, endValue.paddingLeft);
+            values.paddingRight = intEvaluator.evaluate(fraction, startValue.paddingRight, endValue.paddingRight);
+            values.paddingTop = intEvaluator.evaluate(fraction, startValue.paddingTop, endValue.paddingTop);
+            values.paddingBottom = intEvaluator.evaluate(fraction, startValue.paddingBottom, endValue.paddingBottom);
+
+            values.volume = floatEvaluator.evaluate(fraction, startValue.volume, endValue.volume);
 
             return values;
         }
@@ -606,15 +622,18 @@ public class CircularExpandableVideoView extends GLSurfaceView
                     ? 1f
                     : (sizeChangeThreshold * fraction) / sizeChangeThreshold;
 
-            values.width = dimensionsevaluator.evaluate(sizeFrac, startValue.width, endValue.width);
-            values.height = dimensionsevaluator.evaluate(sizeFrac, startValue.height, endValue.height);
+            values.width = intEvaluator.evaluate(sizeFrac, startValue.width, endValue.width);
+            values.height = intEvaluator.evaluate(sizeFrac, startValue.height, endValue.height);
 
-            values.cropRadius = radiusEvaluator.evaluate(radiusFrac, startValue.cropRadius, endValue.cropRadius);
+            values.cropRadius = floatEvaluator.evaluate(radiusFrac, startValue.cropRadius, endValue.cropRadius);
 
-            values.paddingLeft = dimensionsevaluator.evaluate(fraction, startValue.paddingLeft, endValue.paddingLeft);
-            values.paddingRight = dimensionsevaluator.evaluate(fraction, startValue.paddingRight, endValue.paddingRight);
-            values.paddingTop = dimensionsevaluator.evaluate(fraction, startValue.paddingTop, endValue.paddingTop);
-            values.paddingBottom = dimensionsevaluator.evaluate(fraction, startValue.paddingBottom, endValue.paddingBottom);
+            values.paddingLeft = intEvaluator.evaluate(fraction, startValue.paddingLeft, endValue.paddingLeft);
+            values.paddingRight = intEvaluator.evaluate(fraction, startValue.paddingRight, endValue.paddingRight);
+            values.paddingTop = intEvaluator.evaluate(fraction, startValue.paddingTop, endValue.paddingTop);
+            values.paddingBottom = intEvaluator.evaluate(fraction, startValue.paddingBottom, endValue.paddingBottom);
+
+            values.volume = floatEvaluator.evaluate(fraction, startValue.volume, endValue.volume);
+
             return values;
         }
     }
@@ -677,6 +696,8 @@ public class CircularExpandableVideoView extends GLSurfaceView
         int paddingTop = 0;
 
         float cropRadius = 0f;
+
+        float volume = 0f;
     }
 
     public interface VideoSurfaceViewListener extends MediaPlayer.OnPreparedListener {
