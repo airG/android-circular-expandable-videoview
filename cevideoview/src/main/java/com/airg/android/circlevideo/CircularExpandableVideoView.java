@@ -50,6 +50,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 
 import static com.airg.android.circlevideo.Helper.calculateNormalizedRadius;
@@ -79,6 +80,9 @@ public class CircularExpandableVideoView extends GLSurfaceView
     private VideoSurfaceViewListener actionsListener;
 
     boolean collapsed = false;
+    @Setter
+    boolean restartOnExpand = false;
+    private boolean loopVideo = false;
 
     int collapsedWidth = 0;
     int collapsedHeight = 0;
@@ -128,6 +132,8 @@ public class CircularExpandableVideoView extends GLSurfaceView
             animationDuration = ta.getInteger(R.styleable.CircularExpandableVideoView_cevAnimationDuration, animationDuration);
 
             collapsed = ta.getBoolean(R.styleable.CircularExpandableVideoView_cevCollapsed, collapsed);
+            restartOnExpand = ta.getBoolean(R.styleable.CircularExpandableVideoView_cevRestartOnExpand, restartOnExpand);
+            loopVideo = ta.getBoolean(R.styleable.CircularExpandableVideoView_cevLoopVideo, loopVideo);
 
             collapsedVolume = ta.getFloat(R.styleable.CircularExpandableVideoView_cevCollapsedVolume, collapsedVolume);
 
@@ -306,6 +312,31 @@ public class CircularExpandableVideoView extends GLSurfaceView
         mRenderer.updateScale();
     }
 
+    public void seekTo(final int msec) {
+        player.seekTo(msec);
+    }
+
+    public MediaPlayer getMediaPlayer () {
+        return player;
+    }
+
+    public int getDuration () {
+        return player.getDuration();
+    }
+
+    public int getVideoHeight () {
+        return player.getVideoHeight();
+    }
+
+    public int getVideoWidth () {
+        return player.getVideoWidth();
+    }
+
+    public void setLooping (final boolean loop) {
+        loopVideo = loop;
+        player.setLooping(loop);
+    }
+
     public synchronized void play() {
         switch (state) {
             case PLAY:
@@ -466,6 +497,10 @@ public class CircularExpandableVideoView extends GLSurfaceView
                     .addListener(new ExpandCollapseListener(false));
             animator.addUpdateListener(this);
             animator.start();
+
+            if (!restartOnExpand) return;
+
+            player.seekTo(0);
         }
     }
 
