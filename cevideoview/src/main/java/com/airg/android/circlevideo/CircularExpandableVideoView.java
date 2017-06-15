@@ -182,11 +182,11 @@ public class CircularExpandableVideoView extends GLSurfaceView
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2)
             setLayerType(LAYER_TYPE_SOFTWARE, null);
 
+        setEGLContextClientVersion(2);
         setEGLConfigChooser(8, 8, 8, 8, 16, 0);
         getHolder().setFormat(PixelFormat.RGBA_8888);
 
         state = State.UNINITIALIZED;
-        setEGLContextClientVersion(2);
 
         initMediaPlayer();
         setRenderer(mRenderer);
