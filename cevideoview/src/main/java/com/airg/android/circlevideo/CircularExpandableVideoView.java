@@ -119,6 +119,8 @@ public class CircularExpandableVideoView extends GLSurfaceView
 
     private Paint clickPaint;
 
+    private boolean encounteredMediaPlayerError = false;
+
     public CircularExpandableVideoView(Context context) {
         this(context, null);
     }
@@ -198,7 +200,7 @@ public class CircularExpandableVideoView extends GLSurfaceView
         player.reset();
 
         currentVolume = collapsed ? collapsedVolume : expandedVolume;
-        player.setVolume(currentVolume, currentVolume);
+        setVolume(currentVolume, currentVolume);
 
         playWhenReady = false;
         state = State.INITIALIZED;
@@ -274,6 +276,7 @@ public class CircularExpandableVideoView extends GLSurfaceView
     @Override
     public synchronized void onPrepared(MediaPlayer mediaPlayer) {
         state = State.PREPARED;
+        encounteredMediaPlayerError = false;
 
         if (playWhenReady) {
             LOG.d("Player is prepared and play() was called.");
@@ -395,7 +398,8 @@ public class CircularExpandableVideoView extends GLSurfaceView
 
     @Override
     public boolean onError(MediaPlayer mp, int what, int extra) {
-        LOG.e("Mediaplayer error: 0x%x (eaxtra: 0x%x)", what, extra);
+        LOG.d("Mediaplayer error: 0x%x (eaxtra: 0x%x)", what, extra);
+        encounteredMediaPlayerError = true;
         return false;
     }
 
@@ -518,10 +522,20 @@ public class CircularExpandableVideoView extends GLSurfaceView
             currentBottomPadding = current.paddingBottom;
 
             currentVolume = current.volume;
-            player.setVolume(currentVolume, currentVolume);
+            setVolume(currentVolume, currentVolume);
 
             if (BuildConfig.DEBUG) LOG.d("New size: %dx%d, R: %s", currentWidth, currentHeight, current.cropRadius);
             mRenderer.updateScale();
+        }
+    }
+
+    public void setVolume (final float leftVolume, final float rightVolume) {
+        if (encounteredMediaPlayerError) return;
+
+        try {
+            player.setVolume(leftVolume, rightVolume);
+        } catch (IllegalStateException e) {
+            LOG.e(e);
         }
     }
 
