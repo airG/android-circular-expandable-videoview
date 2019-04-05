@@ -3,7 +3,7 @@ def VERSION_MAJOR = 0;
 // Minor version
 def VERSION_MINOR = 2;
 // patch version
-def VERSION_PATCH = 3;
+def VERSION_PATCH = 4;
 
 def gitBranchName = "git symbolic-ref -q --short HEAD".execute().text.trim()
 def gitShortHash = "git rev-parse --short HEAD".execute().text.trim()
