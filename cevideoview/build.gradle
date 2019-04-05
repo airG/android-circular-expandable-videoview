@@ -60,6 +60,10 @@ android {
     }
 }
 
+configurations.all {
+    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+}
+
 dependencies {
     provided 'org.projectlombok:lombok:' + LOMBOK_VERSION
     annotationProcessor 'org.projectlombok:lombok:' + LOMBOK_VERSION
