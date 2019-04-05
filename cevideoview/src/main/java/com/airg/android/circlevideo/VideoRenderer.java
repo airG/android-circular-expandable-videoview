@@ -18,10 +18,12 @@
 
 package com.airg.android.circlevideo;
 
+import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.graphics.SurfaceTexture;
+import android.media.MediaPlayer;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
@@ -35,8 +37,6 @@ import java.nio.FloatBuffer;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
-
-import lombok.Getter;
 
 import static com.airg.android.circlevideo.Helper.aspectRatio;
 import static com.airg.android.circlevideo.Helper.loadShaderCode;
@@ -83,9 +83,7 @@ final class VideoRenderer implements GLSurfaceView.Renderer, SurfaceTexture.OnFr
     private SurfaceTexture mSurface;
     private boolean updateSurface = false;
 
-    @Getter
     private int surfaceWidth = 0;
-    @Getter
     private int surfaceHeight = 0;
 
     private int videoW = 0;
@@ -96,9 +94,14 @@ final class VideoRenderer implements GLSurfaceView.Renderer, SurfaceTexture.OnFr
     float cropRadius = 0f;
     private float aspectRatio = 1f;
 
+    private SubtitlesRenderer subtitlesRenerer;
+
     private final CircularExpandableVideoView view;
 
-    @Getter
+    private String vttText;
+    private String subtitlesFontPath;
+    private MediaPlayer player;
+
     private final RectF clickBounds = new RectF();
     private final RectF videoBounds = new RectF();
 
@@ -110,6 +113,27 @@ final class VideoRenderer implements GLSurfaceView.Renderer, SurfaceTexture.OnFr
         mTriangleVertices.put(mTriangleVerticesData).position(0);
 
         Matrix.setIdentityM(mSTMatrix, 0);
+    }
+
+    int getSurfaceWidth() {
+        return surfaceWidth;
+    }
+
+    int getSurfaceHeight() {
+        return surfaceHeight;
+    }
+
+    RectF getClickBounds() {
+        return clickBounds;
+    }
+
+    void setSubtitles(Context context, String vttText, String fontPath, MediaPlayer player) {
+        this.vttText = vttText;
+        this.subtitlesFontPath = fontPath;
+        this.player = player;
+        if (null != subtitlesRenerer) {
+            subtitlesRenerer.setSubtitles(view.getContext(), vttText, player);
+        }
     }
 
     synchronized void updateScale() {
@@ -326,6 +350,16 @@ final class VideoRenderer implements GLSurfaceView.Renderer, SurfaceTexture.OnFr
 
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
         checkGlError("glDrawArrays");
+
+        GLES20.glDisableVertexAttribArray(maPositionHandle);
+        GLES20.glDisableVertexAttribArray(maTextureHandle);
+        GLES20.glBindTexture(GL_TEXTURE_EXTERNAL_OES, 0);
+        GLES20.glUseProgram(0);
+
+        if (!view.animating && !view.collapsed) {
+            subtitlesRenerer.render(surfaceWidth, surfaceHeight);
+        }
+
         GLES20.glFinish();
     }
 
@@ -333,6 +367,12 @@ final class VideoRenderer implements GLSurfaceView.Renderer, SurfaceTexture.OnFr
         if (BuildConfig.DEBUG) LOG.d("Surface changed (%dx%d)", width, height);
         surfaceWidth = width;
         surfaceHeight = height;
+
+        subtitlesRenerer = new SubtitlesRenderer(view.getContext(), subtitlesFontPath, 32, 3 * surfaceWidth / 4);
+        if (null != vttText && null != player) {
+            subtitlesRenerer.setSubtitles(view.getContext(), vttText, player);
+        }
+        subtitlesRenerer.init();
 
         updateScale();
     }
@@ -388,10 +428,10 @@ final class VideoRenderer implements GLSurfaceView.Renderer, SurfaceTexture.OnFr
         GLES20.glBindTexture(GL_TEXTURE_EXTERNAL_OES, mTextureID);
         checkGlError("glBindTexture mTextureID");
 
-            /*
-             * Create the SurfaceTexture that will feed this textureID,
-             * and pass it to the MediaPlayer
-             */
+        /*
+         * Create the SurfaceTexture that will feed this textureID,
+         * and pass it to the MediaPlayer
+         */
         mSurface = new SurfaceTexture(mTextureID);
         mSurface.setOnFrameAvailableListener(this);
 
@@ -417,9 +457,7 @@ final class VideoRenderer implements GLSurfaceView.Renderer, SurfaceTexture.OnFr
         }
     }
 
-    private int loadShader(final Resources res, final int shaderType) {
-        final String source = loadShaderCode(res, getShaderResourceId(shaderType));
-
+    private int loadShader(final String source, final int shaderType) {
         int shader = GLES20.glCreateShader(shaderType);
         if (shader != 0) {
             GLES20.glShaderSource(shader, source);
@@ -434,6 +472,11 @@ final class VideoRenderer implements GLSurfaceView.Renderer, SurfaceTexture.OnFr
             }
         }
         return shader;
+    }
+
+    private int loadShader(final Resources res, final int shaderType) {
+        final String source = loadShaderCode(res, getShaderResourceId(shaderType));
+        return loadShader(source, shaderType);
     }
 
     private int createProgram() {
@@ -485,4 +528,5 @@ final class VideoRenderer implements GLSurfaceView.Renderer, SurfaceTexture.OnFr
 
         updateScale();
     }
+
 }

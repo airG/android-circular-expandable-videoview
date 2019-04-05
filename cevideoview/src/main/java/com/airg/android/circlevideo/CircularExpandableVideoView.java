@@ -63,6 +63,7 @@ public class CircularExpandableVideoView extends GLSurfaceView
         implements
         MediaPlayer.OnErrorListener,
         MediaPlayer.OnCompletionListener,
+        MediaPlayer.OnSeekCompleteListener,
         MediaPlayer.OnPreparedListener, MediaPlayer.OnVideoSizeChangedListener, ValueAnimator.AnimatorUpdateListener {
 
     // Log tag
@@ -120,6 +121,10 @@ public class CircularExpandableVideoView extends GLSurfaceView
     private Paint clickPaint;
 
     private boolean encounteredMediaPlayerError = false;
+
+
+    private String vttSubtitiles;
+    private String subtitilesFontPath;
 
     public CircularExpandableVideoView(Context context) {
         this(context, null);
@@ -197,7 +202,7 @@ public class CircularExpandableVideoView extends GLSurfaceView
     private synchronized void initMediaPlayer() {
         state = State.UNINITIALIZED;
         player.setOnVideoSizeChangedListener(this);
-        player.reset();
+        //player.reset();
 
         currentVolume = collapsed ? collapsedVolume : expandedVolume;
         setVolume(currentVolume, currentVolume);
@@ -238,6 +243,11 @@ public class CircularExpandableVideoView extends GLSurfaceView
         }
     }
 
+    public void setSubtitles(String vttText, String fontPath) {
+        vttSubtitiles = vttText;
+        subtitilesFontPath = fontPath;
+    }
+
     /**
      * @see android.media.MediaPlayer#setDataSource(java.io.FileDescriptor)
      */
@@ -266,6 +276,7 @@ public class CircularExpandableVideoView extends GLSurfaceView
             player.setOnCompletionListener(this);
             player.setOnErrorListener(this);
             player.setOnPreparedListener(this);
+            player.setOnSeekCompleteListener(this);
             player.prepareAsync();
         } catch (Exception e) {
             e.printStackTrace();
@@ -341,6 +352,11 @@ public class CircularExpandableVideoView extends GLSurfaceView
     }
 
     public synchronized void play() {
+
+        if (null != vttSubtitiles) {
+            mRenderer.setSubtitles(getContext(), vttSubtitiles, subtitilesFontPath, player);
+        }
+
         switch (state) {
             case PLAY:
                 if (paused) {
@@ -367,7 +383,6 @@ public class CircularExpandableVideoView extends GLSurfaceView
             LOG.d("Already paused");
             return;
         }
-
         player.pause();
         paused = true;
     }
@@ -486,7 +501,7 @@ public class CircularExpandableVideoView extends GLSurfaceView
                     AnimationState.builder()
                             .width(targetWidth)
                             .height(targetHeight)
-                            .cropRadius(calculateNormalizedRadius(targetWidth, targetHeight, mRenderer.surfaceWidth(), mRenderer.surfaceHeight()))
+                            .cropRadius(calculateNormalizedRadius(targetWidth, targetHeight, mRenderer.getSurfaceWidth(), mRenderer.getSurfaceHeight()))
                             .volume(expandedVolume)
                             .paddingLeft(expandedLeftPadding)
                             .paddingRight(expandedRightPadding)
@@ -551,7 +566,7 @@ public class CircularExpandableVideoView extends GLSurfaceView
         if (!isInEditMode()) return;
 
         drawEditModeBounds(canvas);
-        canvas.drawRect(mRenderer.clickBounds(), clickPaint);
+        canvas.drawRect(mRenderer.getClickBounds(), clickPaint);
     }
 
     private void drawEditModeBounds(Canvas canvas) {
@@ -562,6 +577,15 @@ public class CircularExpandableVideoView extends GLSurfaceView
         Surface s = new Surface(surface);
         player.setSurface(s);
         s.release();
+    }
+
+    /**
+     * Called to indicate the completion of a seek operation.
+     *
+     * @param mp the MediaPlayer that issued the seek operation
+     */
+    @Override
+    public void onSeekComplete(MediaPlayer mp) {
     }
 
     private class GestureListener extends GestureDetector.SimpleOnGestureListener {
