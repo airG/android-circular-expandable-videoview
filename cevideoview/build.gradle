@@ -2,7 +2,7 @@ apply plugin: 'com.android.library'
 
 apply from: "$rootDir/version.gradle"
 
-apply plugin: 'maven'
+apply plugin: 'com.github.dcendents.android-maven'
 
 group = 'com.github.airG'
 
