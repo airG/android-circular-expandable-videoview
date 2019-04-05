@@ -2,6 +2,10 @@ apply plugin: 'com.android.library'
 
 apply from: "$rootDir/version.gradle"
 
+apply plugin: 'maven'
+
+group = 'com.github.airG'
+
 logger.quiet("android-cevideoview-$VERSION_NAME ($VERSION_CODE)")
 
 ext {
