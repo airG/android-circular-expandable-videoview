@@ -31,6 +31,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.SurfaceTexture;
+import android.graphics.Typeface;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.opengl.GLSurfaceView;
@@ -124,7 +125,7 @@ public class CircularExpandableVideoView extends GLSurfaceView
 
 
     private String vttSubtitiles;
-    private String subtitilesFontPath;
+    private Typeface subtitilesFontFace;
 
     public CircularExpandableVideoView(Context context) {
         this(context, null);
@@ -243,9 +244,9 @@ public class CircularExpandableVideoView extends GLSurfaceView
         }
     }
 
-    public void setSubtitles(String vttText, String fontPath) {
+    public void setSubtitles(String vttText, Typeface fontFace) {
         vttSubtitiles = vttText;
-        subtitilesFontPath = fontPath;
+        subtitilesFontFace = fontFace;
     }
 
     /**
@@ -354,7 +355,7 @@ public class CircularExpandableVideoView extends GLSurfaceView
     public synchronized void play() {
 
         if (null != vttSubtitiles) {
-            mRenderer.setSubtitles(getContext(), vttSubtitiles, subtitilesFontPath, player);
+            mRenderer.setSubtitles(getContext(), vttSubtitiles, subtitilesFontFace, player);
         }
 
         switch (state) {

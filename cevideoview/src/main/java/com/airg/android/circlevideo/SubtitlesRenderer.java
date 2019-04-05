@@ -100,7 +100,7 @@ final class SubtitlesRenderer {
     private float[] scratchMatrix = new float[32];
 
     private Context context;
-    private String fontPath;
+    private Typeface fontFace;
     private int textSize;
     private int maxWidth;
 
@@ -108,10 +108,10 @@ final class SubtitlesRenderer {
 
     private final Object lock = new Object();
 
-    SubtitlesRenderer(Context ctx, String fontPath, int textSize, int maxWidth) {
+    SubtitlesRenderer(Context ctx, Typeface fontFace, int textSize, int maxWidth) {
 
         context = ctx;
-        this.fontPath = fontPath;
+        this.fontFace = fontFace;
         this.textSize = textSize;
         this.maxWidth = maxWidth;
 
@@ -265,10 +265,8 @@ final class SubtitlesRenderer {
 
         int textSizePx = spToPx(textSize, context);
 
-        Typeface font = Typeface.createFromAsset(context.getAssets(), fontPath);
-
         TextPaint paint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
-        paint.setTypeface(font);
+        paint.setTypeface(fontFace);
         paint.setTextSize(textSizePx);
         paint.setColor(Color.WHITE);
 

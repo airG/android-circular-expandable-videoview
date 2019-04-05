@@ -23,6 +23,7 @@ import android.content.res.Resources;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.graphics.SurfaceTexture;
+import android.graphics.Typeface;
 import android.media.MediaPlayer;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
@@ -99,7 +100,7 @@ final class VideoRenderer implements GLSurfaceView.Renderer, SurfaceTexture.OnFr
     private final CircularExpandableVideoView view;
 
     private String vttText;
-    private String subtitlesFontPath;
+    private Typeface subtitlesFontFace;
     private MediaPlayer player;
 
     private final RectF clickBounds = new RectF();
@@ -127,9 +128,9 @@ final class VideoRenderer implements GLSurfaceView.Renderer, SurfaceTexture.OnFr
         return clickBounds;
     }
 
-    void setSubtitles(Context context, String vttText, String fontPath, MediaPlayer player) {
+    void setSubtitles(Context context, String vttText, Typeface fontFace, MediaPlayer player) {
         this.vttText = vttText;
-        this.subtitlesFontPath = fontPath;
+        this.subtitlesFontFace = fontFace;
         this.player = player;
         if (null != subtitlesRenerer) {
             subtitlesRenerer.setSubtitles(view.getContext(), vttText, player);
@@ -368,7 +369,7 @@ final class VideoRenderer implements GLSurfaceView.Renderer, SurfaceTexture.OnFr
         surfaceWidth = width;
         surfaceHeight = height;
 
-        subtitlesRenerer = new SubtitlesRenderer(view.getContext(), subtitlesFontPath, 32, 3 * surfaceWidth / 4);
+        subtitlesRenerer = new SubtitlesRenderer(view.getContext(), subtitlesFontFace, 32, 3 * surfaceWidth / 4);
         if (null != vttText && null != player) {
             subtitlesRenerer.setSubtitles(view.getContext(), vttText, player);
         }
