@@ -65,12 +65,12 @@ configurations.all {
 }
 
 dependencies {
-    provided 'org.projectlombok:lombok:' + LOMBOK_VERSION
+    compileOnly 'org.projectlombok:lombok:' + LOMBOK_VERSION
     annotationProcessor 'org.projectlombok:lombok:' + LOMBOK_VERSION
     testAnnotationProcessor 'org.projectlombok:lombok:' + LOMBOK_VERSION
     androidTestAnnotationProcessor 'org.projectlombok:lombok:' + LOMBOK_VERSION
-    compile 'com.android.support:appcompat-v7:' + SUPPORT_LIB_VERSION
-    compile 'com.airg.android:logger:1.00.00@aar'
+    implementation 'com.android.support:appcompat-v7:' + SUPPORT_LIB_VERSION
+    implementation 'com.airg.android:logger:1.00.00@aar'
 }
 
 apply from: 'https://raw.githubusercontent.com/airG/JCenter/master/install.gradle'

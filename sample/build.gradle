@@ -7,7 +7,7 @@ android {
     defaultConfig {
         applicationId "com.airg.videoclipper"
         minSdkVersion 15
-        targetSdkVersion 25
+        targetSdkVersion 27
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -20,11 +20,11 @@ android {
 }
 
 dependencies {
-    provided 'org.projectlombok:lombok:' + LOMBOK_VERSION
+    compileOnly 'org.projectlombok:lombok:' + LOMBOK_VERSION
     annotationProcessor 'org.projectlombok:lombok:' + LOMBOK_VERSION
     testAnnotationProcessor 'org.projectlombok:lombok:' + LOMBOK_VERSION
     androidTestAnnotationProcessor 'org.projectlombok:lombok:'+ LOMBOK_VERSION
-    compile 'com.android.support:appcompat-v7:' + SUPPORT_LIB_VERSION
-    compile 'com.airg.android:logger:1.00.00@aar'
-    compile project(':cevideoview')
+    implementation 'com.android.support:appcompat-v7:' + SUPPORT_LIB_VERSION
+    implementation 'com.airg.android:logger:1.00.00@aar'
+    implementation project(':cevideoview')
 }
