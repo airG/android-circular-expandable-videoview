@@ -25,6 +25,7 @@ dependencies {
     testAnnotationProcessor 'org.projectlombok:lombok:' + LOMBOK_VERSION
     androidTestAnnotationProcessor 'org.projectlombok:lombok:'+ LOMBOK_VERSION
     implementation 'com.android.support:appcompat-v7:' + SUPPORT_LIB_VERSION
-    implementation 'com.airg.android:logger:1.00.00@aar'
+    implementation 'com.github.airG:android-logging:1.00.00'
+
     implementation project(':cevideoview')
 }

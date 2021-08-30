@@ -2,9 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/android-circular-expandable-videoview.iml" filepath="$PROJECT_DIR$/android-circular-expandable-videoview.iml" />
-      <module fileurl="file://$PROJECT_DIR$/cevideoview/cevideoview.iml" filepath="$PROJECT_DIR$/cevideoview/cevideoview.iml" />
-      <module fileurl="file://$PROJECT_DIR$/sample/sample.iml" filepath="$PROJECT_DIR$/sample/sample.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/android-circular-expandable-videoview.iml" filepath="$PROJECT_DIR$/.idea/modules/android-circular-expandable-videoview.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/cevideoview/android-circular-expandable-videoview.cevideoview.iml" filepath="$PROJECT_DIR$/.idea/modules/cevideoview/android-circular-expandable-videoview.cevideoview.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/sample/android-circular-expandable-videoview.sample.iml" filepath="$PROJECT_DIR$/.idea/modules/sample/android-circular-expandable-videoview.sample.iml" />
     </modules>
   </component>
 </project>
